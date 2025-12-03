@@ -5,7 +5,8 @@ try {
     Write-Host "[ CLOUD ] Downloading Google Chrome (Online Installer)..." -ForegroundColor Cyan
     
     # ใช้ลิงก์ตรงสำหรับตัว Stub Installer (Online) ขนาดเล็ก
-    $url = "http://dl.google.com/chrome/install/375.126/chrome_installer.exe"
+    # $url = "http://dl.google.com/chrome/install/375.126/chrome_installer.exe"
+    $url = "https://dl.google.com/chrome/install/latest/chrome_installer.exe"
     $dest = "$env:TEMP\ChromeSetup.exe"
     
     # ถ้ามีไฟล์เก่าค้าง ให้ลบทิ้งก่อน
