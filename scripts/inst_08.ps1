@@ -6,11 +6,13 @@ try {
     $url = "https://discord.com/api/download?platform=win"
     $dest = "$env:TEMP\discord_setup.exe"
     
+    # แก้ไข: ลบไฟล์เก่าทิ้งก่อนกันเหนียว (Fix Access Denied)
+    if (Test-Path $dest) { Remove-Item $dest -Force }
+    
     Invoke-WebRequest -Uri $url -OutFile $dest
     
     if (Test-Path $dest) {
         Write-Host "[ CLOUD ] Installing..." -ForegroundColor Green
-        # Discord installs silently by default but -s helps
         Start-Process -FilePath $dest -ArgumentList "-s" -Wait
         Remove-Item $dest -Force
         exit 0
