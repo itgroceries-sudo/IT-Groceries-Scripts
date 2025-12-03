@@ -1,19 +1,27 @@
-:INST_02
-echo.
-echo  !Bg_Yellow!!Black![ DOWNLOAD ]!Reset! !Hi_Yellow!Google Chrome...!Reset!
-set "RND=%RANDOM%" & set "TMP_DIR=%TEMP%\ITG_!RND!" & md "!TMP_DIR!"
-set "SETUP_FILE=!TMP_DIR!\chrome.exe"
+$ErrorActionPreference = 'Stop'
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-powershell -Command "Invoke-WebRequest 'https://dl.google.com/chrome/install/standalonesetup64.exe' -OutFile '!SETUP_FILE!'"
-
-if exist "!SETUP_FILE!" (
-    echo  !Bg_Green!!Hi_White![ INSTALL ]!Reset! !Hi_Green!Installing...!Reset!
-    "!SETUP_FILE!" /silent /install
-    set "done_02=1" & set "failed_02=0"
-) else (
-    echo  !Bg_Red!!Hi_White![ ERROR ]!Reset! !Hi_Red!Download failed.!Reset!
-    set "done_02=0" & set "failed_02=1"
-)
-rd /s /q "!TMP_DIR!" >nul 2>&1
-set "sw_02=0"
-exit /b
+try {
+    Write-Host "[ CLOUD ] Downloading Google Chrome (Online Installer)..." -ForegroundColor Cyan
+    
+    # ใช้ลิงก์ตรงสำหรับตัว Stub Installer (Online) ขนาดเล็ก
+    $url = "https://dl.google.com/chrome/install/ChromeSetup.exe"
+    $dest = "$env:TEMP\ChromeSetup.exe"
+    
+    # ถ้ามีไฟล์เก่าค้าง ให้ลบทิ้งก่อน
+    if (Test-Path $dest) { Remove-Item $dest -Force }
+    
+    Invoke-WebRequest -Uri $url -OutFile $dest
+    
+    if (Test-Path $dest) {
+        Write-Host "[ CLOUD ] Installing..." -ForegroundColor Green
+        # สั่งรันแบบเงียบ (มันจะโหลดไฟล์ต่อเองเบื้องหลัง)
+        Start-Process -FilePath $dest -ArgumentList "/silent", "/install" -Wait
+        
+        Remove-Item $dest -Force
+        exit 0
+    } else { throw "Download failed." }
+} catch {
+    Write-Host "[ ERROR ] $_" -ForegroundColor Red
+    exit 1
+}
