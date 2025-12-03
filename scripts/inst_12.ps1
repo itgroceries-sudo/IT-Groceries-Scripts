@@ -10,9 +10,11 @@ try {
         Write-Host "Version detected: $ver" -ForegroundColor Yellow
         $url = "https://github.com/obsproject/obs-studio/releases/download/$ver/OBS-Studio-$ver-Full-Installer-x64.exe"
         $dest = "$env:TEMP\obs_setup.exe"
+        if (Test-Path $dest) { Remove-Item $dest -Force }
         
-        Write-Host "Downloading..."
-        Invoke-WebRequest -Uri $url -OutFile $dest
+        Write-Host "Downloading (BitsTransfer)..."
+        # แก้ไข: ใช้ Start-BitsTransfer แทน Invoke-WebRequest (เสถียรกว่ามาก)
+        Start-BitsTransfer -Source $url -Destination $dest
         
         Write-Host "[ CLOUD ] Installing..." -ForegroundColor Green
         Start-Process -FilePath $dest -ArgumentList "/S" -Wait
