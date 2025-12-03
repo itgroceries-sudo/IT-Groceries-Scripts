@@ -2,36 +2,51 @@ $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 try {
-    Write-Host "[ CLOUD ] Downloading LINE PC (MSI Enterprise)..." -ForegroundColor Cyan
+    # 1. สร้างโฟลเดอร์ชั่วคราว
+    $workDir = "$env:TEMP\LINE_Install_$((Get-Random))"
+    New-Item -ItemType Directory -Path $workDir -Force | Out-Null
     
-    # 1. ใช้ลิงก์ MSI สำหรับองค์กร (ติดตั้งเงียบแน่นอน 100%)
-    $url = "https://desktop.line-scdn.net/win/msi/LineInst.msi"
-    $dest = "$env:TEMP\LineInst.msi"
+    Write-Host "[ CLOUD ] Downloading LINE PC..." -ForegroundColor Cyan
+    $lineUrl = "https://desktop.line-scdn.net/win/new/LineInst.exe"
+    $lineExe = "$workDir\LineInst.exe"
+    Invoke-WebRequest -Uri $lineUrl -OutFile $lineExe
     
-    if (Test-Path $dest) { Remove-Item $dest -Force }
+    # 2. โหลด 7zr.exe (ตัวแตกไฟล์ขนาดเล็ก) เพื่อมาผ่า LINE
+    Write-Host "[ CLOUD ] Fetching Extractor..." -ForegroundColor Yellow
+    $7zUrl = "https://www.7-zip.org/a/7zr.exe"
+    $7zExe = "$workDir\7zr.exe"
+    Invoke-WebRequest -Uri $7zUrl -OutFile $7zExe
     
-    Invoke-WebRequest -Uri $url -OutFile $dest
+    # 3. สั่งแตกไฟล์ LINE หาไส้ใน (.msi)
+    Write-Host "[ CLOUD ] Extracting MSI..." -ForegroundColor Yellow
+    # ใช้ 7zr แตกไฟล์ LineInst.exe ไปที่โฟลเดอร์ MSI
+    $proc = Start-Process -FilePath $7zExe -ArgumentList "x `"$lineExe`" -o`"$workDir\MSI`" -y" -Wait -PassThru
     
-    if (Test-Path $dest) {
-        Write-Host "[ CLOUD ] Installing..." -ForegroundColor Green
+    # 4. หาไฟล์ .msi ที่แตกออกมา (ชื่ออาจเปลี่ยนไปตามเวอร์ชัน เลยต้องสั่งหา)
+    $msiFile = Get-ChildItem -Path "$workDir\MSI" -Filter "*.msi" -Recurse | Select-Object -First 1
+    
+    if ($msiFile) {
+        Write-Host "[ CLOUD ] Installing $($msiFile.Name)..." -ForegroundColor Green
         
-        # 2. สั่งติดตั้งผ่าน msiexec แบบเงียบ (/qn)
-        $args = "/i `"$dest`" /qn /norestart"
-        $proc = Start-Process -FilePath "msiexec.exe" -ArgumentList $args -Wait -PassThru
+        # 5. สั่งติดตั้ง MSI แบบเงียบกริบ (/qn)
+        $procInstall = Start-Process -FilePath "msiexec.exe" -ArgumentList "/i `"$($msiFile.FullName)`" /qn /norestart" -Wait -PassThru
         
-        if ($proc.ExitCode -eq 0) {
-            # 3. สั่งปิด LINE ที่อาจจะเด้งขึ้นมาเองหลังลงเสร็จ
+        if ($procInstall.ExitCode -eq 0) {
+            # สั่งปิด LINE ที่อาจจะเด้งขึ้นมาเอง
             Start-Sleep -Seconds 5
             Stop-Process -Name "Line" -Force -ErrorAction SilentlyContinue
             Stop-Process -Name "LineInst" -Force -ErrorAction SilentlyContinue
             
-            Remove-Item $dest -Force
+            # ล้างบาง
+            Remove-Item $workDir -Recurse -Force
             exit 0
-        } else {
-            throw "Installation failed (Exit Code: $($proc.ExitCode))"
-        }
-    } else { throw "Download failed." }
+        } else { throw "MSI Installation failed code: $($procInstall.ExitCode)" }
+        
+    } else { throw "MSI file not found inside installer." }
+
 } catch {
     Write-Host "[ ERROR ] $_" -ForegroundColor Red
+    # พยายามลบไฟล์ขยะแม้จะ Error
+    if (Test-Path $workDir) { Remove-Item $workDir -Recurse -Force }
     exit 1
 }
