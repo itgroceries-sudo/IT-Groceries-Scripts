@@ -1,19 +1,31 @@
-:INST_07
-echo.
-echo  !Bg_Yellow!!Black![ DOWNLOAD ]!Reset! !Hi_Yellow!Zoom Meeting...!Reset!
-set "RND=%RANDOM%" & set "TMP_DIR=%TEMP%\ITG_!RND!" & md "!TMP_DIR!"
-set "SETUP_FILE=!TMP_DIR!\zoom.exe"
+$ErrorActionPreference = 'Stop'
 
-powershell -Command "Invoke-WebRequest 'https://zoom.us/client/latest/ZoomInstaller.exe' -OutFile '!SETUP_FILE!'"
+try {
+    # 1. กำหนดค่า (Zoom ลิงก์ตรงถาวร)
+    $url = "https://zoom.us/client/latest/ZoomInstaller.exe"
+    $dest = "$env:TEMP\zoom_setup.exe"  # ใช้ $env:TEMP แทน %TEMP%
 
-if exist "!SETUP_FILE!" (
-    echo  !Bg_Green!!Hi_White![ INSTALL ]!Reset! !Hi_Green!Installing...!Reset!
-    "!SETUP_FILE!" /silent /install
-    set "done_07=1" & set "failed_07=0"
-) else (
-    echo  !Bg_Red!!Hi_White![ ERROR ]!Reset! !Hi_Red!Download failed.!Reset!
-    set "done_07=0" & set "failed_07=1"
-)
-rd /s /q "!TMP_DIR!" >nul 2>&1
-set "sw_07=0"
-exit /b
+    # 2. ดาวน์โหลด
+    Write-Host "[ CLOUD ] Downloading Zoom..." -ForegroundColor Cyan
+    Invoke-WebRequest -Uri $url -OutFile $dest
+
+    # 3. ติดตั้ง
+    if (Test-Path $dest) {
+        Write-Host "[ CLOUD ] Installing..." -ForegroundColor Green
+        
+        # Zoom ต้องใช้ ArgumentList สำหรับพารามิเตอร์ /silent
+        Start-Process -FilePath $dest -ArgumentList "/silent", "/install" -Wait
+        
+        # 4. ลบไฟล์ทิ้ง
+        Remove-Item $dest -Force
+        
+        # ส่งรหัส 0 (สำเร็จ)
+        exit 0
+    } else {
+        throw "Download failed."
+    }
+} catch {
+    Write-Host "[ ERROR ] $_" -ForegroundColor Red
+    # ส่งรหัส 1 (ล้มเหลว)
+    exit 1
+}
