@@ -2,19 +2,29 @@
 echo.
 echo  !Bg_Yellow!!Black![ DOWNLOAD ]!Reset! !Hi_Yellow!LINE PC (Silent Force)...!Reset!
 set "RND=%RANDOM%" & set "TMP_DIR=%TEMP%\ITG_!RND!" & md "!TMP_DIR!"
-set "SETUP_FILE=!TMP_DIR!\line.exe"
+set "PS_SCRIPT=!TMP_DIR!\dl_line.ps1" & set "SETUP_FILE=!TMP_DIR!\line.exe"
 
-:: 1. ดาวน์โหลด
-powershell -Command "Invoke-WebRequest 'https://desktop.line-scdn.net/win/new/LineInst.exe' -OutFile '!SETUP_FILE!'"
+:: --- PowerShell: Bulletproof Download (TLS 1.2 + UserAgent) ---
+echo $ErrorActionPreference = 'Stop' >> "!PS_SCRIPT!"
+echo [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 >> "!PS_SCRIPT!"
+echo try { >> "!PS_SCRIPT!"
+echo     $url = "https://desktop.line-scdn.net/win/new/LineInst.exe" >> "!PS_SCRIPT!"
+echo     Write-Host "Downloading LINE PC..." >> "!PS_SCRIPT!"
+echo     Invoke-WebRequest -Uri $url -OutFile "!SETUP_FILE!" -UserAgent "Mozilla/5.0" >> "!PS_SCRIPT!"
+echo } catch { >> "!PS_SCRIPT!"
+echo     Write-Host "Error: $_" >> "!PS_SCRIPT!"
+echo     exit 1 >> "!PS_SCRIPT!"
+echo } >> "!PS_SCRIPT!"
+
+powershell -ExecutionPolicy Bypass -File "!PS_SCRIPT!"
 
 if exist "!SETUP_FILE!" (
     echo  !Bg_Green!!Hi_White![ INSTALL ]!Reset! !Hi_Green!Installing...!Reset!
     
-    :: 2. สั่งติดตั้งแบบ Silent (NSIS)
-    :: ใช้ /S (ตัวใหญ่) และกำหนด Path ปลายทางชัดเจนเพื่อกันเหนียว
+    :: LINE ใช้ NSIS Installer: /S ต้องตัวใหญ่เสมอ
     "!SETUP_FILE!" /S
     
-    :: 3. รอสักพัก แล้วสั่งปิด LINE ที่อาจจะเด้งขึ้นมาเอง
+    :: รอและสั่งปิด Process ที่อาจเด้งขึ้นมา
     timeout /t 5 >nul
     taskkill /f /im Line.exe >nul 2>&1
     taskkill /f /im LineInst.exe >nul 2>&1
