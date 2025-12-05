@@ -55,7 +55,7 @@ cls
 call :UPDATE_STATUS
 echo.
 echo  !Bold!!Cyan!==============================================================================================!Reset!
-echo                         !Bold!!Bg_Green!!Hi_White!IT GROCERIES SHOP - CLOUD INSTALLER!Reset! !Bg_Magenta!!Hi_Yellow!(v%Ver%)!Reset!
+echo                         !Bold!!Bg_Green!!Hi_White!IT GROCERIES SHOP - CLOUD INSTALLER!Reset! !Bg_Magenta!!Hi_Yellow!(v%Ver% ^| %date%)!Reset!
 echo  !Bold!!Cyan!==============================================================================================!Reset!
 echo.
 :: Layout: Name + Padding + [Status] + Arch (Fixed Alignment)
