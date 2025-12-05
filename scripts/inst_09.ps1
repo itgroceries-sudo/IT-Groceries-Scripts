@@ -1,3 +1,5 @@
-    $Url = "https://desktop.line-scdn.net/win/new/LineInst.exe"
-    $fileName = "LineInst.exe"
-    . "$env:TEMP\Master.ps1"
+$url = "https://desktop.line-scdn.net/win/new/LineInst.exe"
+$fileName = "LineInst.exe"
+$installArgs = "/S"
+
+. "$env:TEMP\Master.ps1"
