@@ -2,11 +2,12 @@
 setlocal EnableDelayedExpansion
 
 :: =========================================================
-::  1. INIT & ADMIN CHECK
+::  1. INIT & CONFIG
 :: =========================================================
-set "Ver=9.9 (Root Structure)"
-:: [แก้แล้ว] ลิงก์สั้นลง (ชี้ไปที่ Root)
+set "Ver=9.9 (Final)"
+:: [แก้แล้ว] ชี้ไปที่ Root (เพราะ Master.ps1 อยู่หน้าบ้าน)
 set "CLOUD_BASE=https://raw.githubusercontent.com/itgroceries-sudo/IT-Groceries-Scripts/main"
+
 set "MASTER_SCRIPT=%TEMP%\Master.ps1"
 set "ARIA2_EXE=%TEMP%\aria2c.exe"
 
@@ -20,14 +21,9 @@ if not "%1"=="am_admin" (
     exit /b
 )
 
-:: Check Core Engine
+:: Check Master (ถ้าไม่มี ให้โหลดจาก Root)
 if not exist "%MASTER_SCRIPT%" (
     powershell -Command "Invoke-WebRequest -Uri '%CLOUD_BASE%/Master.ps1' -OutFile '%MASTER_SCRIPT%'"
-    cls
-    echo. & echo   !Bg_Red!!Hi_White![ ERROR ] Core Engine Missing! !Reset!
-    echo   Please run from LauncherCloud.ps1 only.
-    echo.
-    pause & exit
 )
 
 :: =========================================================
@@ -121,7 +117,7 @@ goto :MAIN_MENU
 cls
 echo. & echo  !Bg_Cyan!!Hi_White![ PROCESS ]!Reset! !Bold!!Cyan!Starting Installation...!Reset! & echo  ---------------------------------------------------
 
-:: Check Aria2 (Silent Download if missing)
+:: Check Aria2
 if not exist "!ARIA2_EXE!" (
     powershell -c "irm https://github.com/aria2/aria2/releases/download/release-1.37.0/aria2-1.37.0-win-64bit-build1.zip -OutFile $env:TEMP\a.zip; Expand-Archive $env:TEMP\a.zip -Dest $env:TEMP\ax -Force; mv $env:TEMP\ax\aria2-*\aria2c.exe $env:TEMP\aria2c.exe -Force; rm $env:TEMP\a.zip -Force; rm $env:TEMP\ax -Recurse -Force" >nul 2>&1
     set "UseAria2=1"
@@ -152,16 +148,20 @@ if "!sw_20!"=="1" call :RUN 20 "Everything"
 echo. & echo  !Bg_Green!!Hi_White![ DONE ]!Reset! Task Completed. & timeout /t 2 >nul & goto :MAIN_MENU
 
 :RUN
-set "ID=%~1" & set "NAME=%~2"
+set "ID=%~1"
+set "NAME=%~2"
 echo. & echo  !Bg_Yellow!!Black![ CLOUD ]!Reset! !Hi_Yellow!%NAME%...!Reset!
-set "TARGET_URL=%CLOUD_BASE%/inst_%ID%.ps1"
+
+:: [สำคัญ] ชี้ไปที่ /scripts/ สำหรับไฟล์ติดตั้ง inst_xx.ps1
+set "TARGET_URL=%CLOUD_BASE%/scripts/inst_%ID%.ps1"
+
 powershell -NoProfile -ExecutionPolicy Bypass -Command "& { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; try { irm $env:TARGET_URL | iex } catch { exit 1 } }"
 if %errorlevel%==0 (echo  !Bg_Green!!Hi_White![ OK ]!Reset! & set "done_%ID%=1") else (echo  !Bg_Red!!Hi_White![ FAIL ]!Reset! & set "failed_%ID%=1")
 set "sw_%ID%=0"
 exit /b
 
 :: =========================================================
-::  5. UTILS & STATUS UPDATER
+::  5. UTILS, COLORS & FIXES
 :: =========================================================
 :SETUP_COLORS_AND_PATHS
 for /F "tokens=1,2 delims=#" %%a in ('"prompt #$H#$E# & echo on & for %%b in (1) do rem"') do set "ESC=%%b"
@@ -202,7 +202,6 @@ for %%i in (01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20) do (set
 exit /b
 
 :FIX_WINDOW
-:: [RESTORED] ใช้โค้ดล็อคหน้าต่างชุดเต็ม (Center + No Resize + No Close) ตามที่คุณต้องการ
 powershell -Command ^
   "$u='[DllImport(\"user32.dll\")] public static extern int GetWindowLong(IntPtr h,int n);[DllImport(\"user32.dll\")] public static extern int SetWindowLong(IntPtr h,int n,int w);[DllImport(\"user32.dll\")] public static extern bool SetWindowPos(IntPtr h,IntPtr i,int x,int y,int cx,int cy,uint f);[DllImport(\"user32.dll\")] public static extern int DeleteMenu(IntPtr h,int n,int w);[DllImport(\"user32.dll\")] public static extern IntPtr GetSystemMenu(IntPtr h,bool b);[DllImport(\"kernel32.dll\")] public static extern IntPtr GetConsoleWindow();';" ^
   "$t=Add-Type -MemberDefinition $u -Name 'Win32' -Namespace Win32 -PassThru;" ^
