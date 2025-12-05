@@ -76,6 +76,8 @@ echo.
 
 set "choice="
 set /p "choice=!Bold!Select Item [!Bg_Magenta!01-20!Reset!] or [!Bg_Green!S/!Bg_Yellow!P1-4/!Bg_White!C/!Bg_Blue!R/!Bg_Red!X!Reset!]: !Reset!"
+:: [FIX] ถ้ากด Enter เปล่าๆ (ไม่พิมพ์อะไร) ให้เด้งกลับไปหน้าเมนูทันที
+if not defined choice goto :MAIN_MENU
 
 if /i "%choice%"=="S" goto :START_PROCESS
 if /i "%choice%"=="P1" goto :SET_PROFILE1
@@ -259,3 +261,4 @@ for %%i in (01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20) do (
     if "!failed_%%i!"=="1" ( set "clr_%%i=!Bg_Red!!Hi_White!" & set "st_%%i= FAILED " )
 )
 exit /b
+
