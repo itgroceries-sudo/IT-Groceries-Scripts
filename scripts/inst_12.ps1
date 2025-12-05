@@ -1,27 +1,5 @@
-$ErrorActionPreference = 'Stop'
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+$url = "https://cdn-fastly.obsproject.com/downloads/OBS-Studio-30.2.3-Windows-Installer.exe"
+$fileName = "OBS_Setup.exe"
+$installArgs = "/S"
 
-try {
-    Write-Host "[ CLOUD ] Checking OBS Version..." -ForegroundColor Cyan
-    $resp = Invoke-WebRequest -Uri "https://github.com/obsproject/obs-studio/releases/latest" -MaximumRedirection 0 -ErrorAction SilentlyContinue
-    $ver = $resp.Headers.Location.Split('/')[-1]
-    
-    if ($ver) {
-        Write-Host "Version detected: $ver" -ForegroundColor Yellow
-        $url = "https://github.com/obsproject/obs-studio/releases/download/$ver/OBS-Studio-$ver-Full-Installer-x64.exe"
-        $dest = "$env:TEMP\obs_setup.exe"
-        if (Test-Path $dest) { Remove-Item $dest -Force }
-        
-        Write-Host "Downloading (BitsTransfer)..."
-        # แก้ไข: ใช้ Start-BitsTransfer แทน Invoke-WebRequest (เสถียรกว่ามาก)
-        Start-BitsTransfer -Source $url -Destination $dest
-        
-        Write-Host "[ CLOUD ] Installing..." -ForegroundColor Green
-        Start-Process -FilePath $dest -ArgumentList "/S" -Wait
-        Remove-Item $dest -Force
-        exit 0
-    } else { throw "Could not detect version." }
-} catch {
-    Write-Host "[ ERROR ] $_" -ForegroundColor Red
-    exit 1
-}
+. "$env:TEMP\Master.ps1"
