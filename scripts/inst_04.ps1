@@ -1,25 +1,26 @@
-$ErrorActionPreference = 'Stop'
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
+# ==============================================================================================
+#  FILE: inst_04.ps1 (VLC Media Player)
+# ==============================================================================================
+$url = "https://get.videolan.org/vlc/3.0.21/win64/vlc-3.0.21-win64.exe"
+$fileName = "vlc_setup.exe"
+$installArgs = "/L=1033 /S"
+# -------------------- MASTER LOGIC START --------------------
+$ErrorActionPreference = 'Stop'; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 try {
-    Write-Host "[ CLOUD ] Finding latest VLC..." -ForegroundColor Cyan
-    $base = "http://download.videolan.org/pub/videolan/vlc/last/win64/"
-    $web = Invoke-WebRequest -Uri $base -UseBasicParsing
-    $file = $web.Links.href | Where-Object {$_ -like "*.exe"} | Select-Object -First 1
+    $dest = "$env:TEMP\$fileName"; $aria2 = "$env:TEMP\aria2c.exe"
+    Write-Host "[ CLOUD ] Downloading $fileName..." -Fg Cyan
+    if ($env:UseAria2 -eq "1" -and (Test-Path $aria2)) { 
+        & $aria2 -x 8 -s 8 -j 1 --check-certificate=false -d "$env:TEMP" -o "$fileName" $url 
+    } else { Invoke-WebRequest -Uri $url -OutFile $dest }
     
-    if ($file) {
-        $url = $base + $file
-        $dest = "$env:TEMP\vlc_setup.exe"
-        
-        Write-Host "Downloading from $url" -ForegroundColor Yellow
-        Invoke-WebRequest -Uri $url -OutFile $dest
-        
-        Write-Host "[ CLOUD ] Installing..." -ForegroundColor Green
-        Start-Process -FilePath $dest -ArgumentList "/S" -Wait
-        Remove-Item $dest -Force
-        exit 0
-    } else { throw "VLC link not found." }
-} catch {
-    Write-Host "[ ERROR ] $_" -ForegroundColor Red
-    exit 1
-}
+    if (Test-Path $dest) {
+        Write-Host "[ CLOUD ] Installing..." -Fg Green
+        if ($dest -like "*.msi") {
+            $proc = Start-Process -FilePath "msiexec.exe" -ArgumentList "/i `"$dest`" $installArgs" -Wait -PassThru
+        } else {
+            $proc = Start-Process -FilePath $dest -ArgumentList $installArgs -Wait -PassThru
+        }
+        if ($proc.ExitCode -eq 0 -or $proc.ExitCode -eq 3010) { Remove-Item $dest -Force; exit 0 } else { throw "Exit Code: $($proc.ExitCode)" }
+    } else { throw "Download Failed" }
+} catch { Write-Host "[ ERROR ] $_" -Fg Red; exit 1 }
+# -------------------- MASTER LOGIC END --------------------
