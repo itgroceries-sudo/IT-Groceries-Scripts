@@ -1,31 +1,26 @@
-$ErrorActionPreference = 'Stop'
-
+# ==============================================================================================
+#  FILE: inst_07.ps1 (Zoom Meeting - MSI)
+# ==============================================================================================
+$url = "https://zoom.us/client/latest/ZoomInstallerFull.msi"
+$fileName = "ZoomInstaller.msi"
+$installArgs = "/qn"
+# -------------------- MASTER LOGIC START --------------------
+$ErrorActionPreference = 'Stop'; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 try {
-    # 1. กำหนดค่า (Zoom ลิงก์ตรงถาวร)
-    $url = "https://zoom.us/client/latest/ZoomInstaller.exe"
-    $dest = "$env:TEMP\zoom_setup.exe"  # ใช้ $env:TEMP แทน %TEMP%
-
-    # 2. ดาวน์โหลด
-    Write-Host "[ CLOUD ] Downloading Zoom..." -ForegroundColor Cyan
-    Invoke-WebRequest -Uri $url -OutFile $dest
-
-    # 3. ติดตั้ง
+    $dest = "$env:TEMP\$fileName"; $aria2 = "$env:TEMP\aria2c.exe"
+    Write-Host "[ CLOUD ] Downloading $fileName..." -Fg Cyan
+    if ($env:UseAria2 -eq "1" -and (Test-Path $aria2)) { 
+        & $aria2 -x 8 -s 8 -j 1 --check-certificate=false -d "$env:TEMP" -o "$fileName" $url 
+    } else { Invoke-WebRequest -Uri $url -OutFile $dest }
+    
     if (Test-Path $dest) {
-        Write-Host "[ CLOUD ] Installing..." -ForegroundColor Green
-        
-        # Zoom ต้องใช้ ArgumentList สำหรับพารามิเตอร์ /silent
-        Start-Process -FilePath $dest -ArgumentList "/silent", "/install" -Wait
-        
-        # 4. ลบไฟล์ทิ้ง
-        Remove-Item $dest -Force
-        
-        # ส่งรหัส 0 (สำเร็จ)
-        exit 0
-    } else {
-        throw "Download failed."
-    }
-} catch {
-    Write-Host "[ ERROR ] $_" -ForegroundColor Red
-    # ส่งรหัส 1 (ล้มเหลว)
-    exit 1
-}
+        Write-Host "[ CLOUD ] Installing..." -Fg Green
+        if ($dest -like "*.msi") {
+            $proc = Start-Process -FilePath "msiexec.exe" -ArgumentList "/i `"$dest`" $installArgs" -Wait -PassThru
+        } else {
+            $proc = Start-Process -FilePath $dest -ArgumentList $installArgs -Wait -PassThru
+        }
+        if ($proc.ExitCode -eq 0 -or $proc.ExitCode -eq 3010) { Remove-Item $dest -Force; exit 0 } else { throw "Exit Code: $($proc.ExitCode)" }
+    } else { throw "Download Failed" }
+} catch { Write-Host "[ ERROR ] $_" -Fg Red; exit 1 }
+# -------------------- MASTER LOGIC END --------------------
