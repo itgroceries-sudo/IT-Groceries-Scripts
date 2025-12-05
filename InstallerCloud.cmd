@@ -1,18 +1,36 @@
 @echo off
 setlocal EnableDelayedExpansion
 
+:: ========================================================= 
+:: 00. START :: CHANGE LOG
+:: =========================================================
+:: v10.3 (Lock Restoration)
+::   - [System] Restored advanced Window Locking (No Resize/Close).
+::   - [System] Updated centering logic to support 100 columns.
+::
+:: v10.2 (Wide Screen)
+::   - [UI] Increased window width to 100 columns.
+::
+:: v10.1 (Layout Polish)
+::   - [UI] Moved !arch_xx! tag to the end of line.
+:: ========================================================= 
+:: 00. END :: CHANGE LOG
+:: =========================================================
+
+
 :: =========================================================
 ::  1. INIT & CONFIG
 :: =========================================================
-set "Ver=9.9 (Final)"
-:: [แก้แล้ว] ชี้ไปที่ Root (เพราะ Master.ps1 อยู่หน้าบ้าน)
+set "Ver=10.3 (Full Lock)"
+:: [Root Base]
 set "CLOUD_BASE=https://raw.githubusercontent.com/itgroceries-sudo/IT-Groceries-Scripts/main"
 
 set "MASTER_SCRIPT=%TEMP%\Master.ps1"
 set "ARIA2_EXE=%TEMP%\aria2c.exe"
 
 title IT Groceries Shop (Cloud UI)
-mode con: cols=85 lines=25
+:: [Wide Screen 100 Cols]
+mode con: cols=100 lines=26
 cd /d "%~dp0"
 
 :: Check Admin
@@ -21,7 +39,7 @@ if not "%1"=="am_admin" (
     exit /b
 )
 
-:: Check Master (ถ้าไม่มี ให้โหลดจาก Root)
+:: Check Master
 if not exist "%MASTER_SCRIPT%" (
     powershell -Command "Invoke-WebRequest -Uri '%CLOUD_BASE%/Master.ps1' -OutFile '%MASTER_SCRIPT%'"
 )
@@ -36,23 +54,24 @@ call :FIX_WINDOW
 cls
 call :UPDATE_STATUS
 echo.
-echo  !Bold!!Cyan!====================================================================================!Reset!
-echo                 !Bold!!Bg_Green!!Hi_White!IT GROCERIES SHOP - CLOUD INSTALLER!Reset! !Bg_Magenta!!Hi_Yellow!(v%Ver%)!Reset!
-echo  !Bold!!Cyan!====================================================================================!Reset!
+echo  !Bold!!Cyan!==============================================================================================!Reset!
+echo                         !Bold!!Bg_Green!!Hi_White!IT GROCERIES SHOP - CLOUD INSTALLER!Reset! !Bg_Magenta!!Hi_Yellow!(v%Ver%)!Reset!
+echo  !Bold!!Cyan!==============================================================================================!Reset!
 echo.
-echo    !Bold!!Hi_Cyan![01]!Reset! !clr_01! 7-Zip                 [!st_01!]!Reset!       !Bold!!Hi_Cyan![11]!Reset! !clr_11! TeamViewer           [!st_11!]!Reset!
-echo    !Bold!!Hi_Cyan![02]!Reset! !clr_02! Google Chrome         [!st_02!]!Reset!       !Bold!!Hi_Cyan![12]!Reset! !clr_12! OBS Studio           [!st_12!]!Reset!
-echo    !Bold!!Hi_Cyan![03]!Reset! !clr_03! Mozilla Firefox       [!st_03!]!Reset!       !Bold!!Hi_Cyan![13]!Reset! !clr_13! Audacity             [!st_13!]!Reset!
-echo    !Bold!!Hi_Cyan![04]!Reset! !clr_04! VLC Media Player      [!st_04!]!Reset!       !Bold!!Hi_Cyan![14]!Reset! !clr_14! GIMP (Photo Editor)  [!st_14!]!Reset!
-echo    !Bold!!Hi_Cyan![05]!Reset! !clr_05! Notepad++             [!st_05!]!Reset!       !Bold!!Hi_Cyan![15]!Reset! !clr_15! LibreOffice          [!st_15!]!Reset!
-echo    !Bold!!Hi_Cyan![06]!Reset! !clr_06! AnyDesk               [!st_06!]!Reset!       !Bold!!Hi_Cyan![16]!Reset! !clr_16! CPU-Z                [!st_16!]!Reset!
-echo    !Bold!!Hi_Cyan![07]!Reset! !clr_07! Zoom Meeting          [!st_07!]!Reset!       !Bold!!Hi_Cyan![17]!Reset! !clr_17! HandBrake            [!st_17!]!Reset!
-echo    !Bold!!Hi_Cyan![08]!Reset! !clr_08! Discord               [!st_08!]!Reset!       !Bold!!Hi_Cyan![18]!Reset! !clr_18! K-Lite Codec Pack    [!st_18!]!Reset!
-echo    !Bold!!Hi_Cyan![09]!Reset! !clr_09! LINE PC               [!st_09!]!Reset!       !Bold!!Hi_Cyan![19]!Reset! !clr_19! PowerToys            [!st_19!]!Reset!
-echo    !Bold!!Hi_Cyan![10]!Reset! !clr_10! Acrobat Reader        [!st_10!]!Reset!       !Bold!!Hi_Cyan![20]!Reset! !clr_20! Everything Search    [!st_20!]!Reset!
+:: Layout: Name + Padding + [Status] + Arch (Fixed Alignment)
+echo    !Bold!!Hi_Cyan![01]!Reset! !clr_01! 7-Zip                 [!st_01!]!Reset! !arch_01!     !Bold!!Hi_Cyan![11]!Reset! !clr_11! TeamViewer           [!st_11!]!Reset! !arch_11!
+echo    !Bold!!Hi_Cyan![02]!Reset! !clr_02! Google Chrome         [!st_02!]!Reset! !arch_02!     !Bold!!Hi_Cyan![12]!Reset! !clr_12! OBS Studio           [!st_12!]!Reset! !arch_12!
+echo    !Bold!!Hi_Cyan![03]!Reset! !clr_03! Mozilla Firefox       [!st_03!]!Reset! !arch_03!     !Bold!!Hi_Cyan![13]!Reset! !clr_13! Audacity             [!st_13!]!Reset! !arch_13!
+echo    !Bold!!Hi_Cyan![04]!Reset! !clr_04! VLC Media Player      [!st_04!]!Reset! !arch_04!     !Bold!!Hi_Cyan![14]!Reset! !clr_14! GIMP (Photo Editor)  [!st_14!]!Reset! !arch_14!
+echo    !Bold!!Hi_Cyan![05]!Reset! !clr_05! Notepad++             [!st_05!]!Reset! !arch_05!     !Bold!!Hi_Cyan![15]!Reset! !clr_15! LibreOffice          [!st_15!]!Reset! !arch_15!
+echo    !Bold!!Hi_Cyan![06]!Reset! !clr_06! AnyDesk               [!st_06!]!Reset! !arch_06!     !Bold!!Hi_Cyan![16]!Reset! !clr_16! CPU-Z                [!st_16!]!Reset! !arch_16!
+echo    !Bold!!Hi_Cyan![07]!Reset! !clr_07! Zoom Meeting          [!st_07!]!Reset! !arch_07!     !Bold!!Hi_Cyan![17]!Reset! !clr_17! HandBrake            [!st_17!]!Reset! !arch_17!
+echo    !Bold!!Hi_Cyan![08]!Reset! !clr_08! Discord               [!st_08!]!Reset! !arch_08!     !Bold!!Hi_Cyan![18]!Reset! !clr_18! K-Lite Codec Pack    [!st_18!]!Reset! !arch_18!
+echo    !Bold!!Hi_Cyan![09]!Reset! !clr_09! LINE PC               [!st_09!]!Reset! !arch_09!     !Bold!!Hi_Cyan![19]!Reset! !clr_19! PowerToys            [!st_19!]!Reset! !arch_19!
+echo    !Bold!!Hi_Cyan![10]!Reset! !clr_10! Acrobat Reader        [!st_10!]!Reset! !arch_10!     !Bold!!Hi_Cyan![20]!Reset! !clr_20! Everything Search    [!st_20!]!Reset! !arch_20!
 echo.
-echo  !Bold!!Cyan!====================================================================================!Reset!
-echo   !Bold!!Bg_Green!!Hi_White! S !Reset! !Bold!!Hi_Green!START!Reset!       !Bold!!Bg_Yellow!!Black! P1..4 !Reset! !White!Profiles!Reset!   !Bold!!Bg_White!!Black! C !Reset! !White!Clear!Reset!   !Bold!!Bg_Blue!!Hi_White! R !Reset! !White!Refresh!Reset!   !Bold!!Bg_Red!!Hi_White! X !Reset! !White!Exit!Reset!
+echo  !Bold!!Cyan!==============================================================================================!Reset!
+echo   !Bold!!Bg_Green!!Hi_White! S !Reset! !Bold!!Hi_Green!START!Reset!      !Bold!!Bg_Yellow!!Black! P1..4 !Reset! !White!Profiles!Reset!   !Bold!!Bg_White!!Black! C !Reset! !White!Clear!Reset!   !Bold!!Bg_Blue!!Hi_White! R !Reset! !White!Refresh!Reset!   !Bold!!Bg_Red!!Hi_White! X !Reset! !White!Exit!Reset!
 echo.
 
 set "choice="
@@ -152,7 +171,7 @@ set "ID=%~1"
 set "NAME=%~2"
 echo. & echo  !Bg_Yellow!!Black![ CLOUD ]!Reset! !Hi_Yellow!%NAME%...!Reset!
 
-:: [สำคัญ] ชี้ไปที่ /scripts/ สำหรับไฟล์ติดตั้ง inst_xx.ps1
+:: [Target URL - In Scripts Folder]
 set "TARGET_URL=%CLOUD_BASE%/scripts/inst_%ID%.ps1"
 
 powershell -NoProfile -ExecutionPolicy Bypass -Command "& { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; try { irm $env:TARGET_URL | iex } catch { exit 1 } }"
@@ -161,7 +180,7 @@ set "sw_%ID%=0"
 exit /b
 
 :: =========================================================
-::  5. UTILS, COLORS & FIXES
+::  5. UTILS, COLORS, PATHS & UPDATE STATUS
 :: =========================================================
 :SETUP_COLORS_AND_PATHS
 for /F "tokens=1,2 delims=#" %%a in ('"prompt #$H#$E# & echo on & for %%b in (1) do rem"') do set "ESC=%%b"
@@ -178,27 +197,29 @@ set "Bg_Green=%ESC%[42m" & set "Bg_Yellow=%ESC%[43m"
 set "Bg_Blue=%ESC%[44m" & set "Bg_Magenta=%ESC%[45m"
 set "Bg_Cyan=%ESC%[46m" & set "Bg_White=%ESC%[47m"
 
-set "Path_01=%ProgramFiles%\7-Zip\7z.exe"
-set "Path_02=%ProgramFiles%\Google\Chrome\Application\chrome.exe"
-set "Path_03=%ProgramFiles%\Mozilla Firefox\firefox.exe"
-set "Path_04=%ProgramFiles%\VideoLAN\VLC\vlc.exe"
-set "Path_05=%ProgramFiles%\Notepad++\notepad++.exe"
-set "Path_06=%ProgramFiles(x86)%\AnyDesk\AnyDesk.exe"
-set "Path_07=%AppData%\Zoom\bin\Zoom.exe"
-set "Path_08=%LocalAppData%\Discord\Update.exe"
-set "Path_09=%LocalAppData%\LINE\bin\LineLauncher.exe"
-set "Path_10=%ProgramFiles%\Adobe\Acrobat DC\Acrobat\Acrobat.exe"
-set "Path_11=%ProgramFiles%\TeamViewer\TeamViewer.exe"
-set "Path_12=%ProgramFiles%\obs-studio\bin\64bit\obs64.exe"
-set "Path_13=%ProgramFiles%\Audacity\Audacity.exe"
-set "Path_14=%ProgramFiles%\GIMP 2\bin\gimp-2.10.exe"
-set "Path_15=%ProgramFiles%\LibreOffice\program\soffice.exe"
-set "Path_16=%ProgramFiles%\CPUID\CPU-Z\cpuz.exe"
-set "Path_17=%ProgramFiles%\HandBrake\HandBrake.exe"
-set "Path_18=%ProgramFiles(x86)%\K-Lite Codec Pack\MPC-HC64\mpc-hc64.exe"
-set "Path_19=%ProgramFiles%\PowerToys\PowerToys.exe"
-set "Path_20=%ProgramFiles%\Everything\Everything.exe"
-for %%i in (01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20) do (set "sw_%%i=0" & set "done_%%i=0" & set "failed_%%i=0" & set "clr_%%i=!Hi_White!")
+:: [ PATH DEFINITIONS ] P64 = x64 Path | P32 = x86 Path
+set "P64_01=%ProgramFiles%\7-Zip\7z.exe"                               & set "P32_01=%ProgramFiles(x86)%\7-Zip\7z.exe"
+set "P64_02=%ProgramFiles%\Google\Chrome\Application\chrome.exe"        & set "P32_02=%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe"
+set "P64_03=%ProgramFiles%\Mozilla Firefox\firefox.exe"                 & set "P32_03=%ProgramFiles(x86)%\Mozilla Firefox\firefox.exe"
+set "P64_04=%ProgramFiles%\VideoLAN\VLC\vlc.exe"                        & set "P32_04=%ProgramFiles(x86)%\VideoLAN\VLC\vlc.exe"
+set "P64_05=%ProgramFiles%\Notepad++\notepad++.exe"                     & set "P32_05=%ProgramFiles(x86)%\Notepad++\notepad++.exe"
+set "P64_06=%ProgramFiles%\AnyDesk\AnyDesk.exe"                         & set "P32_06=%ProgramFiles(x86)%\AnyDesk\AnyDesk.exe"
+set "P64_07=%AppData%\Zoom\bin\Zoom.exe"                                & set "P32_07="
+set "P64_08=%LocalAppData%\Discord\Update.exe"                          & set "P32_08="
+set "P64_09=%LocalAppData%\LINE\bin\LineLauncher.exe"                   & set "P32_09="
+set "P64_10=%ProgramFiles%\Adobe\Acrobat DC\Acrobat\Acrobat.exe"        & set "P32_10=%ProgramFiles(x86)%\Adobe\Acrobat DC\Acrobat\Acrobat.exe"
+set "P64_11=%ProgramFiles%\TeamViewer\TeamViewer.exe"                   & set "P32_11=%ProgramFiles(x86)%\TeamViewer\TeamViewer.exe"
+set "P64_12=%ProgramFiles%\obs-studio\bin\64bit\obs64.exe"              & set "P32_12=%ProgramFiles(x86)%\obs-studio\bin\32bit\obs32.exe"
+set "P64_13=%ProgramFiles%\Audacity\Audacity.exe"                       & set "P32_13=%ProgramFiles(x86)%\Audacity\Audacity.exe"
+set "P64_14=%ProgramFiles%\GIMP 2\bin\gimp-2.10.exe"                    & set "P32_14=%ProgramFiles(x86)%\GIMP 2\bin\gimp-2.10.exe"
+set "P64_15=%ProgramFiles%\LibreOffice\program\soffice.exe"             & set "P32_15=%ProgramFiles(x86)%\LibreOffice\program\soffice.exe"
+set "P64_16=%ProgramFiles%\CPUID\CPU-Z\cpuz.exe"                        & set "P32_16=%ProgramFiles(x86)%\CPUID\CPU-Z\cpuz.exe"
+set "P64_17=%ProgramFiles%\HandBrake\HandBrake.exe"                     & set "P32_17=%ProgramFiles(x86)%\HandBrake\HandBrake.exe"
+set "P64_18=%ProgramFiles(x86)%\K-Lite Codec Pack\MPC-HC64\mpc-hc64.exe" & set "P32_18=%ProgramFiles(x86)%\K-Lite Codec Pack\MPC-HC\mpc-hc.exe"
+set "P64_19=%ProgramFiles%\PowerToys\PowerToys.exe"                     & set "P32_19="
+set "P64_20=%ProgramFiles%\Everything\Everything.exe"                   & set "P32_20=%ProgramFiles(x86)%\Everything\Everything.exe"
+
+for %%i in (01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20) do (set "sw_%%i=0" & set "done_%%i=0" & set "failed_%%i=0" & set "clr_%%i=!Hi_White!" & set "arch_%%i=     ")
 exit /b
 
 :FIX_WINDOW
@@ -208,7 +229,7 @@ powershell -Command ^
   "$h=$t::GetConsoleWindow();" ^
   "Add-Type -AssemblyName System.Windows.Forms;" ^
   "$s=[System.Windows.Forms.Screen]::PrimaryScreen.Bounds;" ^
-  "$x=($s.Width - (85*9))/2; $y=($s.Height - (25*19))/2;" ^
+  "$x=($s.Width - (100*9))/2; $y=($s.Height - (26*19))/2;" ^
   "$t::SetWindowPos($h,0,$x,$y,0,0,0x41);" ^
   "$style=$t::GetWindowLong($h,-16);" ^
   "$t::SetWindowLong($h,-16,$style -band 0xFFFEFFFF);" ^
@@ -220,8 +241,20 @@ exit /b
 for %%i in (01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20) do (
     set "clr_%%i=!Bg_Red!!Hi_White!"
     set "st_%%i=   OFF  "
+    set "arch_%%i=     "
+    set "Path_%%i="
+    
+    :: [ARCH CHECK LOGIC]
+    if exist "!P64_%%i!" (
+        set "Path_%%i=!P64_%%i!"
+        set "arch_%%i=!Hi_Yellow!(x64)!Reset!"
+    ) else if exist "!P32_%%i!" (
+        set "Path_%%i=!P32_%%i!"
+        set "arch_%%i=!Hi_Yellow!(x86)!Reset!"
+    )
+
     if "!sw_%%i!"=="1" ( set "clr_%%i=!Bg_Yellow!!Black!" & set "st_%%i=   ON   " )
-    if exist "!Path_%%i!" ( set "clr_%%i=!Bg_Cyan!!Hi_White!" & set "st_%%i= INSTLD " )
+    if defined Path_%%i ( set "clr_%%i=!Bg_Cyan!!Hi_White!" & set "st_%%i= INSTLD " )
     if "!done_%%i!"=="1" ( set "clr_%%i=!Bg_Green!!Hi_White!" & set "st_%%i=  DONE  " )
     if "!failed_%%i!"=="1" ( set "clr_%%i=!Bg_Red!!Hi_White!" & set "st_%%i= FAILED " )
 )
