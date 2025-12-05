@@ -23,7 +23,7 @@ try {
         
         # -x16 = 16 connections
         # --check-certificate=false (Fix some redirect issues with Mozilla)
-        & $aria2 -x 8 -s 8 -j 1 --disable-ipv6=true --check-certificate=false -d "$env:TEMP" -o "$fileName" $url        
+        & $aria2 -x 16 -s 16 -j 1 --disable-ipv6=true --check-certificate=false -d "$env:TEMP" -o "$fileName" $url        
         Write-Host "`n[ TEST ] Download Complete. Look at the stats above!" -ForegroundColor Yellow
         Write-Host "[ TEST ] This confirms Aria2 is working." -ForegroundColor Yellow
         # Pause to let you see the Aria2 progress bar/speed
