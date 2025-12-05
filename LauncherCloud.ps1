@@ -18,17 +18,18 @@ if ((Read-Host "Enter Password") -ne "ITG2") { Write-Host "Access Denied"; sleep
 
 # 1. Config Base URL (หน้าบ้าน)
 # [แก้แล้ว] ลิงก์สั้นลง (ชี้ไปที่ Root ของ Main)
-$BaseURL = "https://raw.githubusercontent.com/itgroceries-sudo/IT-Groceries-Scripts/main"
+$cmdUrl = "https://raw.githubusercontent.com/itgroceries-sudo/IT-Groceries-Scripts/refs/heads/main/InstallerCloud.cmd"
+$ps1Url = "https://raw.githubusercontent.com/itgroceries-sudo/IT-Groceries-Scripts/refs/heads/main/Master.ps1"
 $tmpDir  = "$env:TEMP"
 
 Write-Host "`n[ INITIALIZING ] Connecting to Cloud Repository..." -ForegroundColor Cyan
 
 try {
     # Step 1: โหลด Master Engine (อยู่ที่หน้าแรก ใช้ BaseURL ได้เลย)
-    Invoke-WebRequest -Uri "$BaseURL/Master.ps1" -OutFile "$tmpDir\Master.ps1" -UseBasicParsing -ErrorAction Stop
+    Invoke-WebRequest -Uri "$ps1Url" -OutFile "$tmpDir\Master.ps1" -UseBasicParsing -ErrorAction Stop
 
     # Step 2: โหลด Installer UI (อยู่ที่หน้าแรก ใช้ BaseURL ได้เลย)
-    $cmdContent = (Invoke-WebRequest -Uri "$BaseURL/InstallerCloud.cmd" -UseBasicParsing -ErrorAction Stop).Content
+    $cmdContent = (Invoke-WebRequest -Uri "$cmdUrl" -UseBasicParsing -ErrorAction Stop).Content
     
     # ... (ส่วนรันโปรแกรมเหมือนเดิม) ...
 
@@ -46,4 +47,5 @@ try {
     Write-Host "Download Failed: $_" -ForegroundColor Red
     Write-Host "Check URL: $BaseURL" -ForegroundColor Gray
     Start-Sleep 5
+
 }
