@@ -4,6 +4,6 @@ $fileName = "AnyDesk.exe"
 
 # [FIX] ไม่ระบุ path ปลายทาง (ให้มันลง Default เอง) เพื่อป้องกันปัญหาเรื่อง Quote ใน PowerShell
 # ใช้คำสั่ง --install --start-with-win --silent ตามมาตรฐาน
-$installArgs = "--install --start-with-win --silent"
+$installArgs = --install "C:\Program Files (x86)\AnyDesk" --start-with-win --create-shortcuts --create-desktop-icon --silent
 
 . "$env:TEMP\Master.ps1"
