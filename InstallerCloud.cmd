@@ -2,29 +2,16 @@
 setlocal EnableDelayedExpansion
 
 :: ========================================================= 
-:: 00. START :: CHANGE LOG
+::  IT Groceries Shop Installer (Cloud)
+::  Version: 10.6
+::  See 'Changes.log' for version history.
 :: =========================================================
-:: v10.3 (Lock Restoration)
-::   - [System] Restored advanced Window Locking (No Resize/Close).
-::   - [System] Updated centering logic to support 100 columns.
-::
-:: v10.2 (Wide Screen)
-::   - [UI] Increased window width to 100 columns.
-::
-:: v10.1 (Layout Polish)
-::   - [UI] Moved !arch_xx! tag to the end of line.
-:: ========================================================= 
-:: 00. END :: CHANGE LOG
-:: =========================================================
-
 
 :: =========================================================
 ::  1. INIT & CONFIG
 :: =========================================================
-set "Ver=10.3 (Full Lock)"
-:: [Root Base]
+set "Ver=10.6"
 set "CLOUD_BASE=https://raw.githubusercontent.com/itgroceries-sudo/IT-Groceries-Scripts/main"
-
 set "MASTER_SCRIPT=%TEMP%\Master.ps1"
 set "ARIA2_EXE=%TEMP%\aria2c.exe"
 
@@ -261,6 +248,7 @@ for %%i in (01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20) do (
     if "!failed_%%i!"=="1" ( set "clr_%%i=!Bg_Red!!Hi_White!" & set "st_%%i= FAILED " )
 )
 exit /b
+
 
 
 
