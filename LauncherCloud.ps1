@@ -5,7 +5,7 @@
 $ErrorActionPreference = 'SilentlyContinue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-$Host.UI.RawUI.WindowTitle = "IT Groceries Launcher [Cloud UI]"
+$Host.UI.RawUI.WindowTitle = "IT Groceries Launcher"
 
 # 1. Config & Window
 $u='[DllImport("user32.dll")] public static extern bool SetWindowPos(IntPtr h,IntPtr i,int x,int y,int cx,int cy,uint f);[DllImport("kernel32.dll")] public static extern IntPtr GetConsoleWindow();'
@@ -13,18 +13,18 @@ $t=Add-Type -MemberDefinition $u -Name 'Win32' -Namespace Win32 -PassThru
 $h=$t::GetConsoleWindow(); $t::SetWindowPos($h,0,200,200,600,300,0x41) >$null
 
 # 2. Security Check
-Write-Host "`n[ SECURITY CHECK ]" -ForegroundColor Yellow
-if ((Read-Host "Enter Password") -ne "ITG2") { Write-Host "Access Denied" -ForegroundColor Red; sleep 2; exit }
+if ((Read-Host "Enter Password") -ne "ITG2") { Write-Host "Access Denied"; sleep 2; exit }
 
 # 3. Cloud Configuration
 $BaseURL = "https://raw.githubusercontent.com/itgroceries-sudo/IT-Groceries-Scripts/main"
 $tmpDir  = "$env:TEMP"
 
-# [STEALTH] สร้างชื่อไฟล์แบบสุ่ม (เช่น x8k29a.cmd) เพื่อไม่ให้ User จำชื่อไฟล์ได้
+# [STEALTH] Random Filename
 $RandomName = -join ((65..90) + (97..122) + (48..57) | Get-Random -Count 8 | % {[char]$_})
 $StealthFile = "$tmpDir\$RandomName.cmd"
+$MasterFile = "$tmpDir\Master.ps1"
 
-Write-Host "`n[ INITIALIZING ] LAUNCHING...IT Groceries Launcher [Cloud UI]" -ForegroundColor Cyan
+Write-Host "`n[ INITIALIZING ] Secure Boot..." -ForegroundColor Cyan
 
 try {
     # =========================================================
@@ -63,5 +63,3 @@ try {
     Write-Host "Error: $_" -ForegroundColor Red
     Start-Sleep 3
 }
-
-
