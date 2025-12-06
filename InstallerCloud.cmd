@@ -73,8 +73,7 @@ if /i "%choice%"=="P3" goto :SET_PROFILE3
 if /i "%choice%"=="P4" goto :SET_PROFILE4
 if /i "%choice%"=="C" call :CLEAR_ALL & goto :MAIN_MENU
 if /i "%choice%"=="R" goto :REFRESH_STATUS
-if /i "%choice%"=="X" exit
-
+if /i "%choice%"=="X" goto :EXIT_CLEANUP
 if "%choice:~1%"=="" set "choice=0%choice%"
 if defined sw_%choice% (
     if "!sw_%choice%!"=="0" (set "sw_%choice%=1") else (set "sw_%choice%=0")
@@ -248,6 +247,29 @@ for %%i in (01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20) do (
     if "!failed_%%i!"=="1" ( set "clr_%%i=!Bg_Red!!Hi_White!" & set "st_%%i= FAILED " )
 )
 exit /b
+
+:: =========================================================
+::  6. EXIT & CLEANUP
+:: =========================================================
+:EXIT_CLEANUP
+cls
+echo.
+echo  !Bg_Red!!Hi_White! CLEANUP !Reset! Cleaning up temporary files...
+
+:: ลบ Aria2 (คนงาน)
+if exist "%ARIA2_EXE%" (
+    del "%ARIA2_EXE%" >nul 2>&1
+)
+
+:: ลบ Master (เครื่องยนต์) - ถ้า Launcher ไม่ได้ลบ ตัวนี้จะช่วยลบให้
+if exist "%MASTER_SCRIPT%" (
+    del "%MASTER_SCRIPT%" >nul 2>&1
+)
+
+echo.
+echo  !Green!See you next time!!Reset!
+timeout /t 1 >nul
+exit
 
 
 
