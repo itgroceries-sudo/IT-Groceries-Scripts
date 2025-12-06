@@ -206,7 +206,7 @@ set "P64_03=%ProgramFiles%\Mozilla Firefox\firefox.exe"                 & set "P
 set "P64_04=%ProgramFiles%\VideoLAN\VLC\vlc.exe"                        & set "P32_04=%ProgramFiles(x86)%\VideoLAN\VLC\vlc.exe"
 set "P64_05=%ProgramFiles%\Notepad++\notepad++.exe"                     & set "P32_05=%ProgramFiles(x86)%\Notepad++\notepad++.exe"
 set "P64_06=%ProgramFiles%\AnyDesk\AnyDesk.exe"                         & set "P32_06=%ProgramFiles(x86)%\AnyDesk\AnyDesk.exe"
-set "P64_07=%AppData%\Zoom\bin\Zoom.exe"                                & set "P32_07="
+set "P64_07=%AppData%\Zoom\bin\Zoom.exe"                                & set "P32_07=%ProgramFiles(x86)%\Zoom\bin\Zoom.exe"
 set "P64_08=%LocalAppData%\Discord\Update.exe"                          & set "P32_08="
 set "P64_09=%LocalAppData%\LINE\bin\LineLauncher.exe"                   & set "P32_09="
 set "P64_10=%ProgramFiles%\Adobe\Acrobat DC\Acrobat\Acrobat.exe"        & set "P32_10=%ProgramFiles(x86)%\Adobe\Acrobat DC\Acrobat\Acrobat.exe"
@@ -261,4 +261,5 @@ for %%i in (01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20) do (
     if "!failed_%%i!"=="1" ( set "clr_%%i=!Bg_Red!!Hi_White!" & set "st_%%i= FAILED " )
 )
 exit /b
+
 
