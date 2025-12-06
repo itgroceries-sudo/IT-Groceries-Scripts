@@ -226,7 +226,7 @@ exit /b
 
 :FIX_WINDOW
 powershell -Command ^
-  "$u='[DllImport(\"user32.dll\")] public static extern int GetWindowLong(IntPtr h,int n);[DllImport(\"user32.dll\")] public static extern int SetWindowLong(IntPtr h,int n,int w);[DllImport(\"user32.dll\")] public static extern bool SetWindowPos(IntPtr h,IntPtr i,int x,int y,int cx,int cy,uint f);[DllImport(\"user32.dll\")] public static extern int DeleteMenu(IntPtr h,int n,int w);[DllImport(\"user32.dll\")] public static extern IntPtr GetSystemMenu(IntPtr h,bool b);[DllImport(\"kernel32.dll\")] public static extern IntPtr GetConsoleWindow();';" ^
+  "$u='[DllImport(\"user32.dll\")] public static extern int GetWindowLong(IntPtr h,int n);[DllImport(\"user32.dll\")] public static extern int SetWindowLong(IntPtr h,int n,int w);[DllImport(\"user32.dll\")] public static extern bool SetWindowPos(IntPtr h,IntPtr i,int x,int y,int cx,int cy,uint f);[DllImport(\"user32.dll\")] public static extern bool EnableMenuItem(IntPtr h,uint i,uint e);[DllImport(\"user32.dll\")] public static extern IntPtr GetSystemMenu(IntPtr h,bool b);[DllImport(\"kernel32.dll\")] public static extern IntPtr GetConsoleWindow();';" ^
   "$t=Add-Type -MemberDefinition $u -Name 'Win32' -Namespace Win32 -PassThru;" ^
   "$h=$t::GetConsoleWindow();" ^
   "Add-Type -AssemblyName System.Windows.Forms;" ^
@@ -236,7 +236,7 @@ powershell -Command ^
   "$style=$t::GetWindowLong($h,-16);" ^
   "$t::SetWindowLong($h,-16,$style -band 0xFFFEFFFF);" ^
   "$m=$t::GetSystemMenu($h,$false);" ^
-  "$t::DeleteMenu($m,0xF060,0);" >nul 2>&1
+  "$t::EnableMenuItem($m,0xF060,1);" >nul 2>&1
 exit /b
 
 :UPDATE_STATUS
@@ -261,5 +261,6 @@ for %%i in (01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20) do (
     if "!failed_%%i!"=="1" ( set "clr_%%i=!Bg_Red!!Hi_White!" & set "st_%%i= FAILED " )
 )
 exit /b
+
 
 
