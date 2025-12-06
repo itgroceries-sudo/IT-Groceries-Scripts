@@ -1,12 +1,6 @@
-# --- IT Groceries Shop Launcher (Stealth Mode) ---
-# ========================================================= 
-# 00. START :: CHANGE LOG
-# =========================================================
-# v1.2 (Stealth)
-#   - [Security] Changed temp filename to Random GUID.
-#   - [Security] Applied 'Hidden' attribute to the downloaded script.
-#   - [Security] TLS 1.2 Enforced.
-# ========================================================= 
+# --- IT Groceries Shop Launcher ---
+# Version: 1.2 (Stealth)
+# See 'Changes.log' for version history.
 
 $ErrorActionPreference = 'SilentlyContinue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -19,6 +13,7 @@ $t=Add-Type -MemberDefinition $u -Name 'Win32' -Namespace Win32 -PassThru
 $h=$t::GetConsoleWindow(); $t::SetWindowPos($h,0,200,200,600,300,0x41) >$null
 
 # 2. Security Check
+Write-Host "`n[ SECURITY CHECK ]" -ForegroundColor Yellow
 if ((Read-Host "Enter Password") -ne "ITG2") { Write-Host "Access Denied"; sleep 2; exit }
 
 # 3. Cloud Configuration
@@ -29,7 +24,7 @@ $tmpDir  = "$env:TEMP"
 $RandomName = -join ((65..90) + (97..122) + (48..57) | Get-Random -Count 8 | % {[char]$_})
 $StealthFile = "$tmpDir\$RandomName.cmd"
 
-Write-Host "`n[ INITIALIZING ] Secure Boot..." -ForegroundColor Cyan
+Write-Host "`n[ INITIALIZING ] SECURITY LAUNCHING..." -ForegroundColor Cyan
 
 try {
     # Step 1: Master Engine
@@ -62,3 +57,4 @@ try {
     Write-Host "Error: $_" -ForegroundColor Red
     Start-Sleep 3
 }
+
