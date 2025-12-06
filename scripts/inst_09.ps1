@@ -1,69 +1,66 @@
 # =========================================================
-#  FILE: inst_09.ps1 (LINE PC - 7-Zip Unpack Strategy)
-#  Description: Uses 7-Zip to extract the inner installer directly
+#  FILE: inst_09.ps1 (LINE PC - GDrive Zip Method)
 # =========================================================
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-$url = "https://desktop.line-scdn.net/win/new/LineInst.exe"
-$fileName = "LineInst.exe"
-$dest = "$env:TEMP\$fileName"
+# [CONFIG] เอา ID จากลิงก์ Google Drive มาใส่ตรงนี้
+$GDriveID = "1XG5PH3WWBaNRKLvDYkigPo3b6hyktUwW" 
+
+# สร้างลิงก์ดาวน์โหลดตรง (Direct Link)
+$url = "https://drive.google.com/uc?export=download&id=$GDriveID"
+$zipFile = "$env:TEMP\LineSetup.zip"
 $extractDir = "$env:TEMP\Line_Extract"
 
-# เช็คว่ามี 7-Zip ไหม (ใช้ตัว 64bit หรือ 32bit ก็ได้)
-$7z = "$env:ProgramFiles\7-Zip\7z.exe"
-if (-not (Test-Path $7z)) { $7z = "${env:ProgramFiles(x86)}\7-Zip\7z.exe" }
-
-if (-not (Test-Path $7z)) {
-    Write-Host "[ ERROR ] 7-Zip is required for LINE installation." -ForegroundColor Red
-    Write-Host "Please install 7-Zip (Menu 01) first!" -ForegroundColor Yellow
-    exit 1
-}
-
 try {
-    # 1. Download
-    Write-Host "[ CLOUD ] Downloading LINE PC..." -ForegroundColor Cyan
-    Invoke-WebRequest -Uri $url -OutFile $dest -UseBasicParsing
+    # 1. Download ZIP
+    Write-Host "[ CLOUD ] Downloading LINE form GDrive..." -ForegroundColor Cyan
+    Invoke-WebRequest -Uri $url -OutFile $zipFile -UseBasicParsing
 
-    if (Test-Path $dest) {
-        # 2. Extract using 7-Zip (แกะไส้ในออกมา)
-        Write-Host "[ LINE ] Extracting installer..." -ForegroundColor Yellow
+    if (Test-Path $zipFile) {
+        # 2. Extract
+        Write-Host "[ LINE ] Extracting..." -ForegroundColor Yellow
         if (Test-Path $extractDir) { Remove-Item $extractDir -Recurse -Force }
-        
-        # สั่ง 7z แตกไฟล์ไปที่โฟลเดอร์ชั่วคราว
-        & $7z x "$dest" "-o$extractDir" -y | Out-Null
+        Expand-Archive -Path $zipFile -DestinationPath $extractDir -Force
 
-        # 3. Find Inner Installer (หาไฟล์ .exe ตัวจริงข้างใน)
-        # ปกติ LINE จะซ่อนตัวจริงไว้ชื่อประมาณ LineInst_xxxx.exe หรืออยู่ในโฟลเดอร์ย่อย
-        $realInstaller = Get-ChildItem "$extractDir\LineInst_*.exe" -Recurse | Select-Object -First 1
+        # 3. Find Installer (หาไฟล์ .exe ที่แกะออกมา)
+        $realInstaller = Get-ChildItem "$extractDir\*.exe" -Recurse | Select-Object -First 1
         
-        if (-not $realInstaller) {
-            # ถ้าไม่เจอชื่อ LineInst_*.exe ให้ลองหา .exe ที่ใหญ่ที่สุดในนั้น
-            $realInstaller = Get-ChildItem "$extractDir\*.exe" -Recurse | Sort-Object Length -Descending | Select-Object -First 1
-        }
-
-        # 4. Install
         if ($realInstaller) {
-            Write-Host "[ LINE ] Installing real setup: $($realInstaller.Name)" -ForegroundColor Cyan
+            Write-Host "[ LINE ] Installing: $($realInstaller.Name)" -ForegroundColor Cyan
             
-            # สั่งรันตัวจริงด้วย /S (Silent)
-            $proc = Start-Process -FilePath $realInstaller.FullName -ArgumentList "/S" -Wait -PassThru
+            # 4. Install & Watchdog (สูตรแก้ค้าง)
+            $proc = Start-Process -FilePath $realInstaller.FullName -ArgumentList "/S" -PassThru
             
-            if ($proc.ExitCode -eq 0) {
-                Write-Host "[ SUCCESS ] LINE PC Installed." -ForegroundColor Green
-            } else {
-                throw "Installation Failed (Code: $($proc.ExitCode))"
+            $timeout = 0
+            while (-not $proc.HasExited) {
+                Start-Sleep -Seconds 2
+                $timeout++
+                
+                # ถ้า LINE เด้งขึ้นมา แสดงว่าเสร็จแล้ว -> ฆ่าทิ้ง
+                $lineApp = Get-Process "LINE" -ErrorAction SilentlyContinue
+                if ($lineApp) {
+                    Write-Host "[ FIX ] Killing Auto-Start LINE..." -ForegroundColor Magenta
+                    $lineApp | Stop-Process -Force -ErrorAction SilentlyContinue
+                    # ฆ่าตัวติดตั้งด้วยเพื่อให้จบงาน
+                    $proc | Stop-Process -Force -ErrorAction SilentlyContinue
+                    break
+                }
+                
+                # Timeout 3 นาที
+                if ($timeout -ge 90) { $proc | Stop-Process -Force; break }
             }
+
+            # 5. Cleanup
+            Write-Host "[ SUCCESS ] LINE PC Installed." -ForegroundColor Green
+            Remove-Item $zipFile -Force -ErrorAction SilentlyContinue
+            Remove-Item $extractDir -Recurse -Force -ErrorAction SilentlyContinue
+            
         } else {
-            throw "Could not find installer inside the package."
+            throw "Installer not found in ZIP."
         }
-
-        # 5. Cleanup
-        Remove-Item $dest -Force -ErrorAction SilentlyContinue
-        Remove-Item $extractDir -Recurse -Force -ErrorAction SilentlyContinue
-
     } else {
-        throw "Download Failed"
+        throw "Download Failed (Check GDrive Link)."
     }
 
 } catch {
