@@ -1,5 +1,9 @@
 # Change Log - IT Groceries Shop Installer (Cloud)
 
+## Launcher v1.3 (Force Clean)
+- [Fix] Added a pre-download cleanup routine to handle "Access Denied" errors.
+- [Fix] Forces reset of file attributes (Hidden -> Normal) before deletion to ensure leftover files from crashed sessions are removed.
+
 ## v10.7 (Auto Cleanup)
 - [System] Added :EXIT_CLEANUP routine to delete 'aria2c.exe' and 'Master.ps1' upon exit.
 - [UI] Added "Note" instruction in Main Menu.
