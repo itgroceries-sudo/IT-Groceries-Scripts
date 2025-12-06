@@ -1,7 +1,11 @@
 # Change Log - IT Groceries Shop Installer (Cloud)
 
-## v10.6 (Latest)
-- [UI] Added usage instruction note ("Note: Please select items...") in Main Menu.
+## v10.7 (Auto Cleanup)
+- [System] Added :EXIT_CLEANUP routine to delete 'aria2c.exe' and 'Master.ps1' upon exit.
+- [UI] Added "Note" instruction in Main Menu.
+
+## v10.6
+- [UI] Adjusted Main Menu layout.
 
 ## v10.5
 - [Fix] Zoom: Added dual-check paths (%AppData% and %ProgramFiles(x86)%) to ensure status detection works for both install types.
