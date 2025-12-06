@@ -1,68 +1,74 @@
 # =========================================================
-#  FILE: inst_09.ps1 (LINE PC - Custom Logic)
-#  Description: Unpacks the wrapper to find the real installer
+#  FILE: inst_09.ps1 (LINE PC - Auto GUI Interaction)
+#  Description: Uses SendKeys to simulate "Next > Agree > Install"
 # =========================================================
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 $url = "https://desktop.line-scdn.net/win/new/LineInst.exe"
-$wrapperFile = "$env:TEMP\LineInst_Wrapper.exe"
+$fileName = "LineInst.exe"
+$dest = "$env:TEMP\$fileName"
 
-try {
-    # 1. Download Wrapper (ตัวเปลือก)
-    Write-Host "[ CLOUD ] Downloading LINE Wrapper..." -ForegroundColor Cyan
-    Invoke-WebRequest -Uri $url -OutFile $wrapperFile -UseBasicParsing
+# 1. โหลดไฟล์เอง (ไม่ผ่าน Master)
+Write-Host "[ CLOUD ] Downloading LINE PC..." -ForegroundColor Cyan
+Invoke-WebRequest -Uri $url -OutFile $dest -UseBasicParsing
 
-    if (Test-Path $wrapperFile) {
-        # 2. Run Wrapper to Extract (รันเพื่อให้มันคายไฟล์ออกมา)
-        Write-Host "[ LINE ] Extracting real installer..." -ForegroundColor Yellow
-        $wrapperProc = Start-Process -FilePath $wrapperFile -PassThru
+if (Test-Path $dest) {
+    Write-Host "[ LINE ] Launching Installer..." -ForegroundColor Yellow
+    
+    # สั่งรันโปรแกรมแบบไม่รอ (Start without wait)
+    $proc = Start-Process -FilePath $dest -PassThru
 
-        # 3. Loop Check: รอจนกว่าจะเจอไฟล์ LineInst_*.exe ใน Temp
-        $maxRetries = 30  # รอสูงสุด 30 วินาที
-        $realInstaller = $null
+    # เรียกใช้ WScript Shell เพื่อส่งปุ่มกด
+    $wshell = New-Object -ComObject WScript.Shell
+    
+    # 2. รอและกดปุ่ม (Step-by-Step)
+    Write-Host "[ AUTO ] Waiting for GUI..." -ForegroundColor Gray
+    
+    # รอ 3-5 วินาที ให้หน้าต่างแรกขึ้น (Language Selection)
+    Start-Sleep -Seconds 5
+    
+    # ตรวจสอบว่าโปรแกรมยังรันอยู่ไหม
+    if (-not $proc.HasExited) {
+        # Activate หน้าต่าง (เพื่อให้แน่ใจว่าปุ่มกดไม่วืด)
+        # ลอง Activate โดยใช้ชื่อ Title ทั่วไปของ Line Installer
+        $wshell.AppActivate("LINE Installation") 
+        $wshell.AppActivate("LINE Installer")
         
-        for ($i=0; $i -lt $maxRetries; $i++) {
-            Start-Sleep 1
-            # ค้นหาไฟล์ที่ชื่อขึ้นต้นด้วย LineInst_ และลงท้ายด้วย .exe (เอาตัวใหม่ล่าสุด)
-            $realInstaller = Get-ChildItem "$env:TEMP\LineInst_*.exe" | Sort-Object CreationTime -Descending | Select-Object -First 1
-            
-            if ($realInstaller) {
-                # เจอแล้ว! หยุด Loop
-                break
-            }
-        }
+        # --- KEY SEQUENCE ---
+        # 1. หน้าเลือกภาษา (English) -> กด Enter (OK)
+        $wshell.SendKeys("{ENTER}") 
+        Start-Sleep -Milliseconds 1500
 
-        # 4. Kill Wrapper (ฆ่าตัวเปลือกทิ้ง เพราะเราได้ไส้ในแล้ว)
-        if (-not $wrapperProc.HasExited) {
-            Stop-Process -Id $wrapperProc.Id -Force -ErrorAction SilentlyContinue
-        }
+        # 2. หน้า Welcome -> กด Alt+N (Next)
+        $wshell.SendKeys("%(N)") 
+        Start-Sleep -Milliseconds 1000
 
-        # 5. Run Real Installer (ติดตั้งตัวจริงแบบ Silent)
-        if ($realInstaller) {
-            Write-Host "[ LINE ] Found: $($realInstaller.Name)" -ForegroundColor Cyan
-            Write-Host "[ CLOUD ] Installing..." -ForegroundColor Green
-            
-            # สั่งรันตัวจริงด้วย /S
-            $proc = Start-Process -FilePath $realInstaller.FullName -ArgumentList "/S" -Wait -PassThru
-            
-            if ($proc.ExitCode -eq 0) {
-                Write-Host "[ SUCCESS ] LINE PC Installed." -ForegroundColor Green
-                
-                # Cleanup (ลบทั้งตัวเปลือกและตัวจริง)
-                Remove-Item $wrapperFile -Force -ErrorAction SilentlyContinue
-                Remove-Item $realInstaller.FullName -Force -ErrorAction SilentlyContinue
-            } else {
-                throw "Installation Failed (Exit Code: $($proc.ExitCode))"
-            }
-        } else {
-            throw "Could not extract LineInst_*.exe (Time out)"
-        }
+        # 3. หน้า License (ตัวปัญหา!) -> กด Alt+A (I Agree)
+        $wshell.SendKeys("%(A)")
+        Start-Sleep -Milliseconds 1000
+
+        # 4. หน้า Install Location -> กด Alt+I (Install)
+        $wshell.SendKeys("%(I)")
+        
+        Write-Host "[ AUTO ] Installation started..." -ForegroundColor Green
+
+        # 5. รอจนกว่า Process จะจบ (ติดตั้งเสร็จ)
+        $proc.WaitForExit()
+        
+        # 6. กดปิดหน้าต่าง Finish (ถ้ามี)
+        # บางที Line ติดตั้งเสร็จมันจะเปิดตัวเองขึ้นมา เราอาจต้อง Kill Process
+        Start-Sleep -Seconds 2
+        Get-Process "LineInst" -ErrorAction SilentlyContinue | Stop-Process -Force
+        Get-Process "LINE" -ErrorAction SilentlyContinue | Stop-Process -Force # ปิดตัวโปรแกรม LINE ที่เด้งขึ้นมา
+
+        Write-Host "[ SUCCESS ] LINE PC Installed." -ForegroundColor Green
+        
+        # Cleanup
+        Remove-Item $dest -Force -ErrorAction SilentlyContinue
     } else {
-        throw "Download Failed"
+        throw "Installer closed unexpectedly."
     }
-
-} catch {
-    Write-Host "[ ERROR ] $_" -ForegroundColor Red
-    exit 1
+} else {
+    throw "Download Failed"
 }
