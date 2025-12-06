@@ -5,7 +5,7 @@
 $ErrorActionPreference = 'SilentlyContinue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-$Host.UI.RawUI.WindowTitle = "IT Groceries Launcher"
+$Host.UI.RawUI.WindowTitle = "IT Groceries Launcher [Cloud UI]"
 
 # 1. Config & Window
 $u='[DllImport("user32.dll")] public static extern bool SetWindowPos(IntPtr h,IntPtr i,int x,int y,int cx,int cy,uint f);[DllImport("kernel32.dll")] public static extern IntPtr GetConsoleWindow();'
@@ -14,7 +14,7 @@ $h=$t::GetConsoleWindow(); $t::SetWindowPos($h,0,200,200,600,300,0x41) >$null
 
 # 2. Security Check
 Write-Host "`n[ SECURITY CHECK ]" -ForegroundColor Yellow
-if ((Read-Host "Enter Password") -ne "ITG2") { Write-Host "Access Denied"; sleep 2; exit }
+if ((Read-Host "Enter Password") -ne "ITG2") { Write-Host "Access Denied" -ForegroundColor Red; sleep 2; exit }
 
 # 3. Cloud Configuration
 $BaseURL = "https://raw.githubusercontent.com/itgroceries-sudo/IT-Groceries-Scripts/main"
@@ -24,7 +24,7 @@ $tmpDir  = "$env:TEMP"
 $RandomName = -join ((65..90) + (97..122) + (48..57) | Get-Random -Count 8 | % {[char]$_})
 $StealthFile = "$tmpDir\$RandomName.cmd"
 
-Write-Host "`n[ INITIALIZING ] SECURITY LAUNCHING..." -ForegroundColor Cyan
+Write-Host "`n[ INITIALIZING ] LAUNCHING...IT Groceries Launcher [Cloud UI]" -ForegroundColor Cyan
 
 try {
     # Step 1: Master Engine
@@ -57,4 +57,5 @@ try {
     Write-Host "Error: $_" -ForegroundColor Red
     Start-Sleep 3
 }
+
 
