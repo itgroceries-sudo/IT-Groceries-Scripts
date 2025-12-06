@@ -1,0 +1,39 @@
+# Change Log - IT Groceries Shop Installer (Cloud)
+
+## v10.6 (Latest)
+- [UI] Added usage instruction note ("Note: Please select items...") in Main Menu.
+
+## v10.5
+- [Fix] Zoom: Added dual-check paths (%AppData% and %ProgramFiles(x86)%) to ensure status detection works for both install types.
+- [Fix] AnyDesk: Updated installation arguments in inst_06.ps1 to specify target path explicitly.
+
+## v10.4 (Stable Release)
+- [Revert] Removed Dynamic Profile system (Save/Load) to reduce complexity.
+- [Restore] Restored Hardcoded Profiles (P1-P4) for stability.
+
+## v10.3
+- [System] Restored advanced Window Locking (Center Screen + No Resize + No Close button).
+- [System] Updated window centering formula to support 100 columns width.
+
+## v10.2
+- [UI] Increased window width to 100 columns.
+- [UI] Extended separator lines to match new width.
+
+## v10.1
+- [UI] Adjusted layout: Moved architecture tag (x64/x86) to the end of the line for better alignment.
+
+## v10.0
+- [Feature] Added Multi-Architecture detection (x86/x64).
+- [Code] Optimized path variable definitions.
+
+## Launcher v1.2 (Stealth Mode)
+- [Security] Changed temporary filename to Random String (e.g., Xy9Az.cmd) to prevent detection.
+- [Security] Applied 'Hidden' file attribute to the downloaded script and Master engine.
+- [Security] Enforced TLS 1.2 for GitHub compatibility.
+
+## Master Engine v3.0
+- [Core] Added Smart Download Logic:
+  1. Try Aria2 with 16 connections.
+  2. If failed, retry with 8 connections.
+  3. If failed, fallback to standard Windows download (Invoke-WebRequest).
+- [Core] Added Robust Cleanup: Uses 'Finally' block to ensure temporary files are deleted even if errors occur.
